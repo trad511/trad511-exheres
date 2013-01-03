@@ -1,0 +1,29 @@
+# Copyright (c) 2008 Alexander Færøy <eroyf@eroyf.org>
+# Copyright (c) 2009, 2010 Ingmar Vanhassel
+# Distributed under the terms of the GNU General Public License v2
+
+SCM_REPOSITORY="git://anongit.freedesktop.org/git/${PN}/${PN}"
+
+require autotools [ supported_autoconf=[ 2.5 ] supported_automake=[ 1.12 1.11 1.10 ] ] mesa scm-git
+
+DOWNLOADS=""
+PLATFORMS="~amd64 ~ppc64 ~x86"
+
+DEFAULT_SRC_PREPARE_PATCHES=(
+    "${FILES}"/0001-r600_dri-Add-fno-rtti-and-DNDEBUG-to-CXXFLAGS.patch
+    "${FILES}"/0001-mesa-program-Fix-both-Classic-and-Gallium-build.patch
+)
+
+AT_M4DIR=( m4 )
+
+prepare_one_multibuild() {
+    autotools_src_prepare
+}
+
+src_install() {
+    mesa_src_install
+
+    # scm doesn't care about --disable-glut there :(
+    edo rm -f "${IMAGE}/usr/include/GL/glut.h"
+}
+
