@@ -80,7 +80,7 @@ DEPENDENCIES="
         sys-devel/flex
         llvm? ( dev-lang/llvm[>=3.1*][multibuild_c:*(-)?] )
         opencl? (
-            dev-lang/clang[=3.1*][multibuild_c:*(-)?]
+            dev-lang/clang[>=3.1*][multibuild_c:*(-)?]
             dev-lang/llvm[=>3.1*][multibuild_c:*(-)?]
             sys-devel/gcc:*[>=4.6]
         )
