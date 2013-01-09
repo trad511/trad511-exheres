@@ -1,3 +1,7 @@
+Source:  http://comments.gmane.org/gmane.comp.security.firewalls.netfilter.devel/45133 
+Upstream:  Yes, commit 68e77a26111ee6b8f10c735a76891a7de6d57ee6
+Reason:  ip6tc link in source broken, compile would use system development ip6tc if installed.
+
 diff -Naur iptables-1.4.17.old/extensions/GNUmakefile.in iptables-1.4.17.new/extensions/GNUmakefile.in
 --- iptables-1.4.17.old/extensions/GNUmakefile.in	2012-12-25 05:38:36.000000000 -0700
 +++ iptables-1.4.17.new/extensions/GNUmakefile.in	2013-01-09 10:03:53.910919777 -0700
