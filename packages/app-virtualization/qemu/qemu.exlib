@@ -1,31 +1,26 @@
-# Copyright 2009-2012 Wulf C. Krueger <philantrop@exherbo.org>
+# Copyright 2009-2013 Wulf C. Krueger <philantrop@exherbo.org>
 # Distributed under the terms of the GNU General Public License v2
-# Based in part upon 'kvm-83.ebuild' from Gentoo, which is:
-#     Copyright 1999-2009 Gentoo Foundation
 
 require udev-rules
 
 export_exlib_phases src_prepare src_configure src_install pkg_postinst
 
-SUMMARY="Kernel-based Virtual Machine (kvm) userland tools (${PN})"
+SUMMARY="Generic F/OSS machine emulator and virtualizer"
 DESCRIPTION="
-KVM (for Kernel-based Virtual Machine) is a full virtualization solution for Linux
-on x86 hardware containing virtualization extensions (Intel VT or AMD-V). It
-consists of a loadable kernel module, kvm.ko, that provides the core virtualization
-infrastructure and a processor specific module, kvm-intel.ko or kvm-amd.ko. Using
-KVM, one can run multiple virtual machines running unmodified Linux or Windows
-images. Each virtual machine has private virtualized hardware: a network card,
-disk, graphics adapter, etc. The kernel component of KVM is included in mainline
-Linux, as of 2.6.20. Since it's using QEMU, kvm can be used without hardware support.
+QEMU emulates CPUs through dynamic binary translation and provides a set of device
+models to run a variety of unmodified guest operating systems. QEMU can also be
+used purely for CPU emulation for user level processes, allowing applications
+compiled for one architecture to be run on another.
+QEMU now includes full support for KVM (Kernel-based Virtual Machine) which is a
+full virtualization solution for Linux on x86 hardware containing virtualization
+extensions (Intel VT or AMD-V).
+The kernel component of KVM is included in mainline Linux, as of 2.6.20.
 "
-HOMEPAGE="http://www.qemu.org/"
-DOWNLOADS="http://wiki.qemu-project.org/download/${PNV}.tar.bz2"
+HOMEPAGE="http://${PN}.org/"
+DOWNLOADS="http://wiki.${PN}-project.org/download/${PNV}.tar.bz2"
 
 BUGS_TO="philantrop@exherbo.org"
-#REMOTE_IDS="sourceforge:kvm"
-
-#UPSTREAM_CHANGELOG="http://downloads.sourceforge.net/project/kvm/${PN}/${PV}/changelog"
-#UPSTREAM_DOCUMENTATION="${HOMEPAGE}page/Documents [[ lang = en ]]"
+REMOTE_IDS="freecode:qemu"
 
 LICENCES="GPL-2"
 SLOT="0"
@@ -37,9 +32,11 @@ MYOPTIONS="
     caps [[ description = [ Use libcap-ng to reduce qemu process privileges ] ]]
     debug [[ description = [ Enable common debugging features ] ]]
     gnutls [[ description = [ Enable TLS encryption for VNC server ] ]]
+    iscsi [[ description = [ Enable iSCSI support ] ]]
     jpeg [[ description = [ Enable JPEG lossy compression for VNC server ] ]]
     png [[ description = [ Enable PNG compression for VNC server ] ]]
     pulseaudio
+    rbd [[ description = [ Support storage on rados block devices (rbd; ceph) ] ]]
     sasl [[ description = [ Enables SASL authentication for VNC server ] ]]
     sdl [[ description = [ Enables the GUI part of kvm ] ]]
     smartcard [[ description = [ Enables smartcard support ] ]]
@@ -49,7 +46,6 @@ MYOPTIONS="
     virtfs [[ description = [ Enable support for Plan 9 folder sharing over Virtio ]
               requires = [ caps xattr ] ]]
     xattr
-
     (
         amd64 [[ description = [ build the amd64 (x86_64) target ] ]]
         arm [[ description = [ build the arm target ] ]]
@@ -57,7 +53,6 @@ MYOPTIONS="
         x86 [[ description = [ build the x86 target ] ]]
     ) [[ number-selected = at-least-one ]]
 "
-#    rados [[ description = [ Support storage on rados block devices (rbd) ] ]]
 
 DEPENDENCIES="
     build:
@@ -68,14 +63,17 @@ DEPENDENCIES="
         net-misc/curl[>=7.19.6]
         sys-apps/util-linux[>=2.16.1]
         sys-libs/libseccomp
+        x11-libs/pixman
         alsa? ( sys-sound/alsa-lib[>=1.0.13] )
         async? ( dev-libs/libaio[>=0.3.107] )
         bluetooth? ( net-wireless/bluez[>=4.9] )
         caps? ( sys-libs/libcap-ng )
         gnutls? ( dev-libs/gnutls )
+        iscsi? ( dev-libs/libiscsi )
         jpeg? ( media-libs/jpeg )
         png? ( media-libs/libpng )
         pulseaudio? ( media-sound/pulseaudio )
+        rbd? ( sys-cluster/ceph )
         sasl? ( net-libs/cyrus-sasl[>=2.1.22] )
         sdl? ( media-libs/SDL[X][>=1.2.11] )
         smartcard? (
@@ -83,15 +81,15 @@ DEPENDENCIES="
             dev-libs/nss[>=3.13.3]
         )
         spice? ( virtualization-lib/spice[>=0.8.2-r2] )
-        usbredir? ( dev-libs/usbredir[>=0.4.2] )
+        usbredir? ( dev-libs/usbredir[>=0.6] )
         vde? ( net/vde[>=2.2.2] )
         xattr? ( sys-apps/attr )
         !app-emulation/qemu [[
-            description = [ It doesn't make sense to install both anymore. ]
+            description = [ Same package, different category ]
             resolution = [ uninstall-blocked-after ]
         ]]
         !app-virtualization/qemu-kvm [[
-            description = [ It doesn't make sense to install both anymore. ]
+            description = [ qemu-kvm and qemu finally completely merged again. ]
             resolution = [ uninstall-blocked-after ]
         ]]
         group/kvm
@@ -105,7 +103,9 @@ DEPENDENCIES="
 #    * Do this all as root (or at least run the tests as root)
 # Lots of configuration stuff would be needed as well.
 RESTRICT="test"
-# If anyone cares enough: http://www.linux-kvm.org/page/KVM-Autotest
+# If anyone cares enough:
+# http://www.linux-kvm.org/page/KVM-Autotest and
+# http://wiki.qemu.org/Testing
 
 DEFAULT_SRC_COMPILE_PARAMS=( V=1 )
 
@@ -130,34 +130,40 @@ qemu_src_configure() {
         --enable-linux-user
         --enable-mixemu
         --enable-nptl
+        --enable-seccomp
         --enable-system
+        --enable-tcg-interpreter
         --enable-user
         --enable-uuid
         --enable-vhost-net
         --disable-brlapi
         --disable-fdt
+        --disable-glusterfs
         --disable-sparse
         --disable-strip
         --disable-werror
         --disable-xen
+        --disable-xen-pci-passthrough
         --disable-xfsctl # needs xfs/xfs.h, which isn't installed by xfsprogs atm
-
+        --with-system-pixman # required for softmmu
+        $(option_enable async linux-aio)
+        $(option_enable bluetooth bluez)
+        $(option_enable caps cap-ng)
+        $(option_enable gnutls vnc-tls)
+        $(option_enable iscsi libiscsi)
+        $(option_enable jpeg vnc-jpeg)
+        $(option_enable png vnc-png)
+        $(option_enable rbd)
+        $(option_enable sasl vnc-sasl)
+        $(option_enable sdl)
+        $(option_enable smartcard)
+        $(option_enable smartcard smartcard-nss)
+        $(option_enable spice)
+        $(option_enable usbredir usb-redir)
+        $(option_enable vde)
         $(option_enable virtfs)
+        $(option_enable xattr attr)
     )
-
-    if ! ever at_least 1.2.0; then
-        myconfig+=(
-            --enable-kvm-device-assignment
-            --enable-vnc-thread
-        )
-    fi
-
-    if ever at_least 1.2.0; then
-        myconfig+=(
-            --enable-seccomp
-            --disable-xen-pci-passthrough
-        )
-    fi
 
     # audio drivers
     local myaudiodrv="--audio-drv-list="
@@ -166,21 +172,7 @@ qemu_src_configure() {
     option sdl && myaudiodrv+="sdl "
 
     # features
-    option async && myconfig+=( --enable-linux-aio )
-    option bluetooth || myconfig+=( --disable-bluez )
-    option caps && myconfig+=( --enable-cap-ng )
     option debug && myconfig+=( --enable-debug )
-    option jpeg && myconfig+=( --enable-vnc-jpeg )
-    option gnutls || myconfig+=( --disable-vnc-tls )
-    option png && myconfig+=( --enable-vnc-png )
-#    option rados && myconfig+=( --enable-rbd )
-    option sasl || myconfig+=( --disable-vnc-sasl )
-    option sdl || myconfig+=( --disable-sdl )
-    option smartcard && myconfig+=( --enable-smartcard --enable-smartcard-nss )
-    option spice && myconfig+=( --enable-spice )
-    option usbredir && myconfig+=( --enable-usb-redir )
-    option vde || myconfig+=( --disable-vde )
-    option xattr && myconfig+=( --enable-attr )
 
     # targets
     option arm && my_targets+=",arm-linux-user,armeb-linux-user,arm-softmmu"
@@ -208,7 +200,13 @@ qemu_src_install() {
     dodoc pci-ids.txt
     dodoc -r QMP
 
-    dosym /usr/bin/qemu-system-x86_64 /usr/bin/qemu
+    arch=${CHOST%%-*}
+    case ${arch} in
+      i486|i586|i686|x86) arch=i386 ;;
+      amd64) arch=x86_64 ;;
+    esac
+    dosym /usr/bin/qemu-system-${arch} /usr/bin/qemu
+    dosym /usr/bin/qemu-system-${arch} /usr/bin/qemu-kvm
 
     exeinto /usr/bin/
     doexe scripts/kvm/*
