@@ -1,0 +1,31 @@
+Source: Niels Ole Salscheider
+Upstream: no, see https://bugs.freedesktop.org/show_bug.cgi?id=52136
+    See also http://llvm.org/bugs/show_bug.cgi?id=12759
+Reason: Without this patch, r600_dri.so fails to link
+
+From 5641f8763b5025416c0e4d75ca70ae45d5b0c387 Mon Sep 17 00:00:00 2001
+From: Niels Ole Salscheider <niels_ole@salscheider-online.de>
+Date: Mon, 13 Aug 2012 08:42:44 +0200
+Subject: [PATCH] r600_dri: Add -fno-rtti and -DNDEBUG to CXXFLAGS
+
+This has to match LLVM's CXXFLAGS
+---
+ src/gallium/drivers/radeon/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/gallium/drivers/radeon/Makefile b/src/gallium/drivers/radeon/Makefile
+index 424299f..22b0711 100644
+--- a/src/gallium/drivers/radeon/Makefile
++++ b/src/gallium/drivers/radeon/Makefile
+@@ -14,7 +14,7 @@ CXXFLAGS+= $(LLVM_CXXFLAGS)
+ 
+ include ../../Makefile.template
+ 
+-CXXFLAGS := $(filter-out -DDEBUG, $(CXXFLAGS))
++CXXFLAGS := $(filter-out -DDEBUG, $(CXXFLAGS) -fno-rtti -DNDEBUG)
+ 
+ tablegen = $(TBLGEN) -I $(LLVM_INCLUDEDIR) $1 $2 -o $3
+ 
+-- 
+1.7.11.4
+

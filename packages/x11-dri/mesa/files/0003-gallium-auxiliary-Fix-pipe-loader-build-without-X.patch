@@ -1,0 +1,28 @@
+From 91ec363fcc2a026aa1f11e339e79d7fcd8c85f9f Mon Sep 17 00:00:00 2001
+From: Quentin Glidic <sardemff7+git@sardemff7.net>
+Date: Sat, 2 Feb 2013 23:42:36 +0100
+Upstream: no, submitted, see https://bugs.freedesktop.org/show_bug.cgi?id=60216
+Subject: [PATCH] gallium/auxiliary: Fix pipe-loader build without X
+
+Signed-off-by: Quentin Glidic <sardemff7+git@sardemff7.net>
+---
+ src/gallium/auxiliary/pipe-loader/pipe_loader_sw.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/gallium/auxiliary/pipe-loader/pipe_loader_sw.c b/src/gallium/auxiliary/pipe-loader/pipe_loader_sw.c
+index c2b78c6..c21be1e 100644
+--- a/src/gallium/auxiliary/pipe-loader/pipe_loader_sw.c
++++ b/src/gallium/auxiliary/pipe-loader/pipe_loader_sw.c
+@@ -31,7 +31,9 @@
+ #include "util/u_dl.h"
+ #include "sw/null/null_sw_winsys.h"
+ #include "target-helpers/inline_sw_helper.h"
++#ifdef HAVE_WINSYS_XLIB
+ #include "state_tracker/xlib_sw_winsys.h"
++#endif
+ 
+ struct pipe_loader_sw_device {
+    struct pipe_loader_device base;
+-- 
+1.8.1.1
+
