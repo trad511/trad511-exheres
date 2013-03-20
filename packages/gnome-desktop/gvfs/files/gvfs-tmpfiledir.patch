@@ -1,0 +1,24 @@
+diff -Nurp gvfs-1.15.4-a/client/Makefile.am gvfs-1.15.4-b/client/Makefile.am
+--- gvfs-1.15.4-a/client/Makefile.am	2013-03-04 07:25:01.000000000 -0700
++++ gvfs-1.15.4-b/client/Makefile.am	2013-03-19 20:25:44.780944659 -0600
+@@ -86,7 +86,7 @@ gvfsd_fuse_LDADD = \
+ if USE_LIBSYSTEMD_LOGIN
+ 
+ # FIXME: hardcoded path (systemd doesn't use lib64)
+-tmpfilesddir = $(prefix)/lib/tmpfiles.d
++tmpfilesddir = $(prefix)/lib64/tmpfiles.d
+ tmpfilesd_DATA = gvfsd-fuse-tmpfiles.conf
+ 
+ endif
+diff -Nurp gvfs-1.15.4-a/client/Makefile.in gvfs-1.15.4-b/client/Makefile.in
+--- gvfs-1.15.4-a/client/Makefile.in	2013-03-04 07:25:22.000000000 -0700
++++ gvfs-1.15.4-b/client/Makefile.in	2013-03-19 20:27:06.729943040 -0600
+@@ -468,7 +468,7 @@ test_uri_utils_CFLAGS = $(INCLUDES)
+ # FIXME: reusing USE_LIBSYSTEMD_LOGIN as systemd has no universal header or pkg-config file
+ 
+ # FIXME: hardcoded path (systemd doesn't use lib64)
+-@USE_FUSE_TRUE@@USE_LIBSYSTEMD_LOGIN_TRUE@tmpfilesddir = $(prefix)/lib/tmpfiles.d
++@USE_FUSE_TRUE@@USE_LIBSYSTEMD_LOGIN_TRUE@tmpfilesddir = $(prefix)/lib64/tmpfiles.d
+ @USE_FUSE_TRUE@@USE_LIBSYSTEMD_LOGIN_TRUE@tmpfilesd_DATA = gvfsd-fuse-tmpfiles.conf
+ EXTRA_DIST = \
+ 	gvfsd-fuse-tmpfiles.conf	\
