@@ -1,0 +1,70 @@
+# Copyright 2013 Sean Lynn <trad511@gmail.com>
+# Distributed under the terms of the GNU General Public License v2
+
+require cmake
+
+SUMMARY="FLANN - Fast Library for Approximate Nearest Neighbors"
+DESCRIPTION="
+LANN is a library for performing fast approximate nearest neighbor searches in high dimensional spaces. It contains a collection of algorithms we found to work best for nearest neighbor search and a system for automatically choosing the best algorithm and optimum parameters depending on the dataset.
+
+FLANN is written in C++ and contains bindings for the following languages: C, MATLAB and Python. 
+"
+
+HOMEPAGE="http://www.cs.ubc.ca/~mariusm/index.php/FLANN"
+MY_PNV="${PNV}-src"
+DOWNLOADS="http://people.cs.ubc.ca/~mariusm/uploads/FLANN/${MY_PNV}.zip"
+
+LICENCES="BSD"
+SLOT="0"
+
+MYOPTIONS="
+gtest       [[ description = [ Google C++ test framework ] ]]
+examples    [[ description = [ Compile examples:  requires hdf5 library ] ]]
+openmp      [[ description = [ GCC OpenMP parallelism ] ]]
+"
+# Options I'm bailing on for now.  Don't need and no time to test.
+#octave  [[ description = [Octave bindings] ]]
+#openmpi [[ description = [OpenMPI parallelism] ]]
+#python  [[ description = [Python bindings] ]]
+
+DEPENDENCIES="
+    build+run:
+        examples?   ( sci-libs/hdf5:0 )
+        openmp? ( sys-devel/gcc:*[openmp?] )
+    test:
+        gtest?  ( dev-cpp/gtest:0 )
+"
+# Options I'm bailing on for now.  Don't need and no time to test.
+#        octave?     ( sci-apps/octave:0 )
+#        openmpi?    ( sys-cluster/openmpi:0 )
+#        python?     ( dev-python/numpy:0 )
+
+BUGS_TO="http://github.com/mariusmuja/flann/issues"
+
+UPSTREAM_CHANGELOG="${HOMPAGE}/FLANN/Changelog"
+UPSTREAM_DOCUMENTATION="http://people.cs.ubc.ca/~mariusm/uploads/FLANN/flann_manual-1.8.4.pdf"
+
+src_unpack() {
+    unpack ${MY_PNV}.zip
+    edo mv "${WORKBASE}/${MY_PNV}" "${WORKBASE}/${PNV}"
+}
+
+src_prepare () {
+    # Repair a hard coded /lib directory with correct LIBDIR
+    edo sed -i -e "s:\(.PROJECT_BINARY_DIR.\/\)lib:\1${LIBDIR}:" CMakeLists.txt
+    edo sed -i -e "s:\(FLANN_LIB_INSTALL_DIR\ \)\"lib\":\1\"${LIBDIR}\":" cmake/flann_utils.cmake
+}
+
+src_configure() {
+    local conf=(
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DBUILD_C_BINDINGS:BOOL=TRUE
+        -DBUILD_PYTHON_BINDINGS:BOOL=FALSE  # Turn off python for now
+        -DBUILD_MATLAB_BINDINGS:BOOL=FALSE  # Turn off Matlab/Octave bindings for now
+        -DLIBRARY_OUTPUT_PATH="${PREFIX:=/usr}"/${LIBDIR}
+        $(cmake_option openmp USE_OPENMP)
+    )
+    ecmake ${conf[@]}
+}
+
+
