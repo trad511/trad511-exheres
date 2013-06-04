@@ -1,0 +1,118 @@
+# Copyright 2013 Sean Lynn <trad511@gmail.com>
+# Distributed under the terms of the GNU General Public License v2
+
+require cmake [ api=2 ]
+
+SUMMARY="VTK is a software system for 3D Computer Graphics and Visualization"
+DESCRIPTION="
+The Visualization Toolkit (VTK) is an open-source, freely available software system for 3D computer graphics, image processing and visualization. VTK consists of a C++ class library and several interpreted interface layers including Tcl/Tk, Java, and Python.
+"
+
+HOMEPAGE="http://www.vtk.org"
+
+LICENCES="
+    VTK [[ note = [ Modified BSD - http://www.vtk.org/copyright.php ] ]]
+"
+
+MYOPTIONS="
+    boost   [[ description = [ boost for graph library ] ]]
+    ffmpeg  [[ description = [ ffmpeg for avi files ] ]]
+    hdf5    [[ description = [ HDF5 dataset management ] ]]
+    metaio  [[ description = [ MetaIO medical imaging ] ]]
+    X       [[ description = [ Build with X11 libraries ] ]]
+"
+
+DEPENDENCIES="
+    built-against:
+        sys-devel/cmake[>=2.8.6] 
+    build+run:
+        x11-libs/libX11
+        x11-libs/libXext
+        x11-libs/libXmu
+        x11-libs/libXt
+        x11-dri/mesa
+        dev-libs/expat
+        dev-libs/libxml2:2.0
+        media-libs/freetype
+        media-libs/libpng
+        media-libs/tiff
+        media-libs/jpeg
+        sys-libs/zlib
+        boost?  ( dev-libs/boost )
+        ffmpeg? ( media/ffmpeg )
+        hdf5?   ( sci-libs/hdf5 )
+"
+# Options I'm bailing on for now.  Don't need and no time to test.
+#java?
+#mpi?
+#mysql?
+#odbc?
+#postgres?
+#python?
+#qt4?
+#python?
+#tk?
+
+BUGS_TO="http://vtk.org/Bug/my_view_page.php"
+
+UPSTREAM_CHANGELOG="${HOMEPAGE}/Wiki/VTK#Summary_of_Changes"
+UPSTREAM_DOCUMENTATION="${HOMEPAGE}/VTK/help/documentation.html"
+
+src_unpack() {
+    unpack ${PNV}.tar.gz
+    edo mv "${WORKBASE}/${MY_PNV}" "${WORKBASE}/${PNV}"
+    edo mkdir -p "${WORK}"
+}
+
+#src_prepare () {
+#    # Repair a hard coded /lib directory with correct LIBDIR
+#    edo sed -i -e "s:\(.PROJECT_BINARY_DIR.\/\)lib:\1${LIBDIR}:" CMakeLists.txt
+#    edo sed -i -e "s:\(FLANN_LIB_INSTALL_DIR\ \)\"lib\":\1\"${LIBDIR}\":" cmake/flann_utils.cmake
+#}
+
+src_configure() {
+
+    # Location to drop library files during builds. Prevents sandbox violations.
+    MY_VTK_LIBRARY_ROOT="${TEMP}"
+
+    # Ensure install to image directory.
+    # Default library directory is hard-coded to /lib which won't work generally.
+    MY_VTK_INSTALL_ROOT="${IMAGE}"
+    MY_VTK_INSTALL_LIB_PATH="${PREFIX:=/usr}/${LIBDIR}/${PN}-${MY_PV}"
+
+    local conf=(
+        -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo
+        -DBUILD_SHARED_LIBS:BOOL=ON
+        -DBUILD_TESTING=OFF
+        -DBUILD_EXAMPLES=OFF
+        -DVTK_INSTALL_ROOT:PATH="${MY_VTK_INSTALL_ROOT}"
+        -DVTK_INSTALL_LIB_DIR:PATH="${MY_VTK_INSTALL_LIB_PATH}"
+        -DLIBRARY_OUTPUT_PATH:PATH="${MY_VTK_LIBRARY_ROOT}"
+        -DVTK_USE_SYSTEM_EXPAT:BOOL=ON
+        -DVTK_USE_SYSTEM_FREETYPE:BOOL=ON
+        -DVTK_USE_SYSTEM_JPEG:BOOL=ON
+        -DVTK_USE_SYSTEM_LIBXML2:BOOL=ON
+        -DVTK_USE_SYSTEM_PNG:BOOL=ON
+        -DVTK_USE_SYSTEM_TIFF:BOOL=ON
+        -DVTK_USE_SYSTEM_ZLIB:BOOL=ON
+        -DVTK_WRAP_TCL:BOOL=OFF
+        -DVTK_WRAP_PYTHON:BOOL=OFF
+        -DVTK_WRAP_JAVA:BOOL=OFF
+        -DVTK_WRAP_PYTHON_SIP:BOOL=OFF
+        -DVTK_USE_GL2PS:BOOL=ON
+        -DVTK_USE_MPI:BOOL=OFF
+        -DVTK_USE_MYSQL:BOOL=OFF
+        -DVTK_USE_ODBC:BOOL=OFF
+        -DVTK_USE_POSTGRES:BOOL=OFF
+        $(cmake_option boost  VTK_USE_BOOST)
+        $(cmake_option ffmpeg VTK_USE_FFMPEG_ENCODER)
+        $(cmake_option hdf5   VTK_USE_SYSTEM_HDF5)
+        $(cmake_option metaio VTK_USE_METAIO)
+        $(cmake_option X      VTK_USE_X)
+
+    )
+
+    ecmake ${conf[@]}
+}
+
+
