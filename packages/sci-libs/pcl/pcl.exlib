@@ -1,0 +1,83 @@
+# Copyright 2013 Sean Lynn <trad511@gmail.com>
+# Distributed under the terms of the GNU General Public License v2
+
+#require cmake flag-o-matic
+require cmake
+
+SUMMARY="The Point Cloud Library (PCL) is a project for 2D/3D image and point cloud processing."
+DESCRIPTION="
+The Point Cloud Library (or PCL) is a large scale, open project [1] for 2D/3D image and point cloud processing. The PCL framework contains numerous state-of-the art algorithms including filtering, feature estimation, surface reconstruction, registration, model fitting and segmentation.
+"
+
+HOMEPAGE="http://www.pointclouds.org"
+MY_PNV="PCL-${PV}-Source"
+DOWNLOADS="http://sourceforge.net/projects/pointclouds/files/${PV}/${MY_PNV}.tar.bz2"
+
+LICENCES="BSD"
+SLOT="0"
+
+MYOPTIONS="
+docs   [[ description = [ Project Documentation ] ]]
+gtest  [[ description = [ Google C++ test framework ] ]]
+openmp [[ description = [ GCC OpenMP parallelism ] ]]
+openni [[ description = [ OpenNI driver ] ]]
+qhull  [[ description = [ QHull convex hull library ] ]]
+qt     [[ description = [ Qt graphics library support ] ]]
+vtk    [[ description = [ VTK graphics library ] ]]
+"
+#mpi
+#openni [[ description = [ OpenNI device read ] ]]
+
+DEPENDENCIES="
+    build+run:
+        dev-libs/boost[>=1.46]
+        sci-libs/eigen:3
+        sci-libs/flann[>=1.7.1]
+        docs?   ( app-doc/doxygen )
+        openmp? ( sys-devel/gcc:*[openmp?] )
+        qhull?  ( sci-libs/qhull[>=2011.1] )
+        qt?     ( x11-libs/qt:4 )
+        vtk?    ( 
+                  sci-libs/vtk[>=5.6] 
+                  dev-libs/libusb:1
+                )
+    test:
+        gtest?  ( dev-cpp/gtest )
+"
+# Options I'm bailing on for now.  Don't need and no time to test.
+#        openni? ( ? )
+#        mpi? ( ? )
+
+BUGS_TO="http://dev.pointclouds.org/projects/pcl/issues"
+
+UPSTREAM_CHANGELOG="http://dev.pointclouds.org/projects/pcl/wiki/ChangeList"
+UPSTREAM_DOCUMENTATION="http://www.pointclouds.org/documentation"
+
+src_unpack() {
+    unpack ${MY_PNV}.tar.bz2
+    edo mv "${WORKBASE}/${MY_PNV}" "${WORKBASE}/${PNV}"
+}
+
+#src_prepare () {
+#    # Repair a hard coded /lib directory with correct LIBDIR
+#    edo sed -i -e "s:\(.PROJECT_BINARY_DIR.\/\)lib:\1${LIBDIR}:" CMakeLists.txt
+#    edo sed -i -e "s:\(FLANN_LIB_INSTALL_DIR\ \)\"lib\":\1\"${LIBDIR}\":" cmake/flann_utils.cmake
+#}
+
+src_configure() {
+    local conf=(
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DPCL_SHARED_LIBS:BOOL=TRUE
+        $(cmake_build openni apps)
+        $(cmake_build vtk visualization)
+        $(cmake_build gtest TESTS)
+    )
+        #$(cmake_option openmp USE_OPENMP)
+
+    # pipe flag causing OOM compile failures for 4G machine
+    # filter-flags -pipe
+
+    ecmake ${conf[@]}
+}
+
+
