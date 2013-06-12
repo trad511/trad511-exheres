@@ -64,29 +64,33 @@ src_unpack() {
     edo mkdir -p "${WORK}"
 }
 
-#src_prepare () {
-#    # Repair a hard coded /lib directory with correct LIBDIR
-#    edo sed -i -e "s:\(.PROJECT_BINARY_DIR.\/\)lib:\1${LIBDIR}:" CMakeLists.txt
-#    edo sed -i -e "s:\(FLANN_LIB_INSTALL_DIR\ \)\"lib\":\1\"${LIBDIR}\":" cmake/flann_utils.cmake
-#}
-
 src_configure() {
 
-    # Location to drop library files during builds. Prevents sandbox violations.
+
+    # Location to place library files during builds. 
+    # Prevents sandbox violations as default location seems to be /usr
+
     MY_VTK_LIBRARY_ROOT="${TEMP}"
 
-    # Ensure install to image directory.
-    # Default library directory is hard-coded to /lib which won't work generally.
-    MY_VTK_INSTALL_ROOT="${IMAGE}"
-    MY_VTK_INSTALL_LIB_PATH="${PREFIX:=/usr}/${LIBDIR}/${PN}-${MY_PV}"
+
+    # 1. From studying CMakeLists.txt:  CMAKE_INSTALL_PREFIX=VTK_INSTALL_ROOT
+    #    Exherbo by default CMAKE_INSTALL_ROOT=PREFIX=/usr
+    # 2. Default library directory is hard-coded to /lib which won't 
+    #    work generally (ie. 64bit). VTK_INSTALL_LIB_PATH
+    # 3. Default directory for cmake files and scripts is lib dir.
+    #    Place cmake files and script elsewhere. VTK_INSTALL_PACKAGE_DIR
+
+    MY_VTK_INSTALL_LIB_PATH="/${LIBDIR}"
+    MY_VTK_INSTALL_PACKAGE_DIR="/share/${PN}-${MY_PV}"
+
 
     local conf=(
         -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo
         -DBUILD_SHARED_LIBS:BOOL=ON
         -DBUILD_TESTING=OFF
         -DBUILD_EXAMPLES=OFF
-        -DVTK_INSTALL_ROOT:PATH="${MY_VTK_INSTALL_ROOT}"
         -DVTK_INSTALL_LIB_DIR:PATH="${MY_VTK_INSTALL_LIB_PATH}"
+        -DVTK_INSTALL_PACKAGE_DIR:PATH="${MY_VTK_INSTALL_PACKAGE_DIR}"
         -DLIBRARY_OUTPUT_PATH:PATH="${MY_VTK_LIBRARY_ROOT}"
         -DVTK_USE_SYSTEM_EXPAT:BOOL=ON
         -DVTK_USE_SYSTEM_FREETYPE:BOOL=ON
@@ -115,4 +119,15 @@ src_configure() {
     ecmake ${conf[@]}
 }
 
+src_install() {
+    default
+
+    # Env variable to locate cmake files
+
+    hereenvd 80vtk <<EOF
+LDPATH="/usr${MY_VTK_INSTALL_LIB_PATH}"
+VTK_DIR="/usr${MY_VTK_INSTALL_PACKAGE_DIR}"
+EOF
+
+}
 

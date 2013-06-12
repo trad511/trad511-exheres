@@ -1,0 +1,16 @@
+# Copyright 2013 Sean Lynn <trad511@gmail.com>
+# Distributed under the terms of the GNU General Public License v2
+
+require pcl
+
+PLATFORMS="~amd64 ~x86"
+
+MY_PNV="pcl-${PNV}"
+DOWNLOADS="https://github.com/PointCloudLibrary/pcl/archive/${PNV}.tar.gz"
+
+src_unpack() {
+    unpack ${PNV}.tar.gz
+    edo mv "${WORKBASE}/${MY_PNV}" "${WORKBASE}/${PNV}"
+    mkdir -p "${WORK}"
+}
+
