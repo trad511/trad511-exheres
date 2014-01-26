@@ -25,4 +25,9 @@ DEFAULT_SRC_CONFIGURE_PARAMS=( )
 DEFAULT_SRC_CONFIGURE_OPTION_WITHS=( )
 DEFAULT_SRC_CONFIGURE_OPTION_ENABLES=( )
 
+src_unpack() {
+    unpack ${MY_PNV}.tar.bz2
+    edo mv "${WORKBASE}/${MY_PNV}" "${WORKBASE}/${PNV}"
+    mkdir -p "${WORK}"
+}
 
