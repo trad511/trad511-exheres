@@ -5,5 +5,5 @@ require u-boot
 
 PLATFORMS="~amd64 ~x86"
 
-DOWNLOADS="ftp://ftp.denx.de/pub/u-boot/${PNV}.tar.bz2"
+DOWNLOADS="ftp://ftp.denx.de/pub/u-boot/${MY_PNV}.tar.bz2"
 

@@ -7,6 +7,9 @@ Das U-Boot (or just U-Boot for short) is Open Source Firmware for Embedded Power
 "
 HOMEPAGE="http://www.denx.de.wiki/U-Boot/"
 
+MY_PNV="${PN}-tools-${PV}"
+
+
 LICENCES="GPL-2"
 SLOT="0"
 MYOPTIONS=""
