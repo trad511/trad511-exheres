@@ -1,0 +1,25 @@
+# Copyright 2014 <trad511@gmail.com>
+# Distributed under the terms of the GNU General Public License v2
+
+SUMMARY="Utilities for working with Das U-Boot"
+DESCRIPTION="
+Das U-Boot (or just U-Boot for short) is Open Source Firmware for Embedded Power Architecture®, ARM, MIPS, x86 and other processors. The U-Boot project is hosted by DENX, where you can also find the project home page: http://www.denx.de/wiki/U-Boot/ 
+"
+HOMEPAGE="http://www.denx.de.wiki/U-Boot/"
+
+LICENCES="GPL-2"
+SLOT="0"
+MYOPTIONS=""
+
+DEPENDENCIES="
+    build:
+    build+run:
+"
+
+BUGS_TO=""
+
+DEFAULT_SRC_CONFIGURE_PARAMS=( )
+DEFAULT_SRC_CONFIGURE_OPTION_WITHS=( )
+DEFAULT_SRC_CONFIGURE_OPTION_ENABLES=( )
+
+

@@ -1,0 +1,9 @@
+# Copyright 2014 <name>
+# Distributed under the terms of the GNU General Public License v2
+
+require u-boot
+
+PLATFORMS="~amd64 ~x86"
+
+DOWNLOADS="ftp://ftp.denx.de/pub/u-boot/${PNV}.tar.bz2"
+
