@@ -1,0 +1,12 @@
+diff -rupN libsexy-0.1.11-orig/configure.ac libsexy-0.1.11-new/configure.ac
+--- libsexy-0.1.11-orig/configure.ac	2007-03-31 04:15:36.000000000 -0600
++++ libsexy-0.1.11-new/configure.ac	2014-02-09 08:51:49.431885704 -0700
+@@ -82,7 +82,7 @@ AC_EXEEXT
+ 
+ AM_PROG_LIBTOOL
+ 
+-pkg_modules="pango >= 1.4.0, glib-2.0 >= 2.4.0, gtk+-2.0 >= 2.4.0, libxml-2.0"
++pkg_modules="pango >= 1.4.0, glib-2.0 >= 2.4.0, gmodule-2.0 >= 2.4.0, gtk+-2.0 >= 2.4.0, libxml-2.0"
+ PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
+ AC_SUBST(PACKAGE_CFLAGS)
+ AC_SUBST(PACKAGE_LIBS)
